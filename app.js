@@ -52,6 +52,22 @@ const maxVal   = document.getElementById("maxVal");
 let cvReady = false;
 let liveTimer = null;
 
+const startBtn = document.getElementById('startCam');
+
+// extra loggar hjälper oss se var det fastnar
+const log = (...a) => { try { console.log('[domino]', ...a); } catch {} };
+
+startBtn.addEventListener('click', async () => {
+  startBtn.disabled = true;
+  statusP.textContent = "Startar kamera…";
+  try {
+    await waitForOpenCVThenStart();
+  } catch (e) {
+    statusP.textContent = "Fel: " + e;
+    startBtn.disabled = false;
+  }
+});
+
 /* =======================
    Robust laddning av OpenCV
    ======================= */
@@ -374,3 +390,4 @@ function prettyPrint(out){
   resultP.textContent =
     `Antal prickar är: ${out.total}  |  Brickor: [${pretty}]  —  ${out.ms} ms`;
 }
+
