@@ -52,25 +52,60 @@ const maxVal   = document.getElementById("maxVal");
 let cvReady = false;
 let liveTimer = null;
 
-// Vänta in OpenCV.js (laddas async)
-(function waitForCV(){
+/* =======================
+   Robust laddning av OpenCV
+   ======================= */
+function startWhenCvReady() {
   if (typeof cv !== "undefined" && cv.Mat) {
+    // OpenCV kan redan vara färdigt – testa direkt
+    if (typeof cv.imread === "function" && typeof cv.cvtColor === "function") {
+      cvReady = true;
+      statusP.textContent = "OpenCV klart – startar kamera…";
+      initCamera();
+      return;
+    }
+    // Annars kopplar vi in init-callback
     cv['onRuntimeInitialized'] = () => {
       cvReady = true;
       statusP.textContent = "OpenCV klart – startar kamera…";
       initCamera();
     };
-  } else {
-    setTimeout(waitForCV, 100);
+    return;
   }
-})();
+  // cv finns inte ännu – kolla igen om en liten stund
+  setTimeout(startWhenCvReady, 80);
+}
+startWhenCvReady();
 
-// Starta kamera
+/* =======================
+   Kamera – iOS-säker init
+   ======================= */
 async function initCamera(){
   try {
-    const stream = await navigator.mediaDevices.getUserMedia(CAMERA_CONSTRAINTS);
+    // iOS-vänlig autoplay
+    video.muted = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('autoplay', '');
+
+    // 1) Försök med bakre kamera i HD
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(CAMERA_CONSTRAINTS);
+    } catch (e) {
+      // 2) Fallback till valfri kamera om det behövs
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
+
     video.srcObject = stream;
-    await video.play();
+
+    // Vänta på metadata – annars är videoWidth = 0 på iOS
+    await new Promise(res => {
+      if (video.readyState >= 1 && video.videoWidth) return res();
+      video.onloadedmetadata = () => res();
+    });
+
+    try { await video.play(); } catch (_) {}
 
     // matcha canvasstorlek till riktiga pixelmått
     resizeCanvases();
@@ -89,6 +124,7 @@ async function initCamera(){
     statusP.textContent = "Kamera igång ✅";
   } catch (err) {
     statusP.textContent = "Kunde inte starta kamera: " + err;
+    console.error(err);
   }
 }
 
@@ -237,7 +273,7 @@ function drawOverlay(dots, clusters){
   octx.font = "700 22px system-ui, Arial";
   octx.textBaseline = "top";
 
-  clusters.forEach((cluster, idx) => {
+  clusters.forEach((cluster) => {
     // bounding box över alla prickar i klustret
     let minx=Infinity, miny=Infinity, maxx=-Infinity, maxy=-Infinity;
     cluster.forEach(p => {
@@ -254,7 +290,7 @@ function drawOverlay(dots, clusters){
     octx.lineWidth = 3;
     octx.strokeRect(minx, miny, maxx-minx, maxy-miny);
 
-    // etikett
+    // etikett (antal prickar i klustret)
     const txt = String(cluster.length);
     const tw = octx.measureText(txt).width + 12;
     const th = 28;
@@ -329,7 +365,6 @@ function dbscan(points, eps, minPts){
       clusters[lab].push(points[i]);
     }
   }
-  // städa ev tomma
   return clusters.filter(arr => arr.length > 0);
 }
 
