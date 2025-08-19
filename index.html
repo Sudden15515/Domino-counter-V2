@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Domino Prickräknare</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#0b0b0b" />
+</head>
+<body>
+  <header>
+    <h1>🎲 Domino Prickräknare</h1>
+    <p class="sub">Lägg dominobrickor i rutan, tryck “Räkna” eller kör Live-läge. Prickar lyser grönt ✨</p>
+  </header>
+
+  <main>
+    <div class="video-wrap" id="vw">
+      <video id="video" autoplay playsinline></video>
+      <!-- rit-yta ovanpå videon -->
+      <canvas id="overlay"></canvas>
+      <!-- en synlig hjälpram så man siktar rätt -->
+      <div id="hint">Sikta här</div>
+    </div>
+
+    <section class="controls">
+      <button id="snap" disabled>Räkna prickar</button>
+
+      <label class="toggle">
+        <input type="checkbox" id="live">
+        <span>Live-läge</span>
+      </label>
+
+      <div class="sliders">
+        <label>
+          Separation (klustring): <span id="epsVal">auto</span> px
+          <input id="eps" type="range" min="20" max="200" step="5">
+        </label>
+        <label>
+          Min area (brusfilter): <span id="minVal">30</span>
+          <input id="minArea" type="range" min="10" max="200" step="5" value="30">
+        </label>
+        <label>
+          Max area: <span id="maxVal">5000</span>
+          <input id="maxArea" type="range" min="500" max="12000" step="100" value="5000">
+        </label>
+      </div>
+    </section>
+
+    <section class="readout">
+      <p id="status">Laddar OpenCV…</p>
+      <p id="result">Antal prickar är: –</p>
+    </section>
+
+    <!-- arbetscanvas (osynlig, för cv) -->
+    <canvas id="work"></canvas>
+  </main>
+
+  <!-- OpenCV.js (din lokala fil) -->
+  <script async src="opencv.js"></script>
+
+  <!-- Vår app -->
+  <script src="app.js"></script>
+
+  <!-- PWA offline -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js');
+    }
+  </script>
+</body>
+</html>

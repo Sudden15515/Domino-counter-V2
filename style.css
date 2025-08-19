@@ -1,0 +1,113 @@
+:root{
+  --maxw: 560px;
+  --ink: #0b0b0b;
+  --bg:  #f5f7fb;
+  --accent:#08c46b;
+  --ui:  #16181d;
+}
+
+*{ box-sizing: border-box; }
+
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+header{
+  padding:18px 14px 8px;
+  text-align:center;
+}
+header h1{ margin:0; font-weight:800; }
+header .sub{ margin:.4rem 0 0; color:#666; font-size:.95rem; }
+
+main{
+  width:100%;
+  max-width:var(--maxw);
+  margin:0 auto;
+  padding:14px;
+}
+
+.video-wrap{
+  position:relative;
+  width:100%;
+  aspect-ratio:3/4;           /* bra mobil-ratio */
+  background:#000;
+  border:2px solid var(--ui);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,.15);
+}
+
+video, #overlay{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+#hint{
+  position:absolute;
+  left:8%;
+  right:8%;
+  top:14%;
+  bottom:12%;
+  border:2px dashed rgba(8, 196, 107, 0.9);
+  border-radius:10px;
+  pointer-events:none;
+  text-indent:-9999px; /* bara ram, ingen text */
+}
+
+.controls{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  gap:12px;
+  align-items:center;
+  margin:14px 0 6px;
+}
+
+button{
+  grid-column:1 / span 2;
+  appearance:none;
+  border:none;
+  background:var(--accent);
+  color:#fff;
+  padding:12px 14px;
+  font-size:1rem;
+  font-weight:700;
+  border-radius:10px;
+  cursor:pointer;
+  transition:.2s transform;
+}
+button:active{ transform:scale(.98); }
+button:disabled{ opacity:.6; cursor:default; }
+
+.toggle{
+  display:flex; align-items:center; gap:8px;
+  color:#333;
+}
+
+.sliders label{
+  display:block;
+  font-size:.9rem;
+  color:#333;
+  margin-top:6px;
+}
+.sliders input[type=range]{ width:100%; }
+
+.readout{
+  margin-top:4px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:12px;
+  padding:10px 12px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.06);
+}
+#status{ margin:.2rem 0; color:#666; }
+#result{ margin:.2rem 0; font-weight:800; font-size:1.1rem; }
+
+/* arbetscanvas visas inte */
+#work{ display:none; }
