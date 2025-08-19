@@ -71,26 +71,32 @@ startBtn.addEventListener('click', async () => {
 /* =======================
    Robust laddning av OpenCV
    ======================= */
-function startWhenCvReady() {
-  if (typeof cv !== "undefined" && cv.Mat) {
-    // OpenCV kan redan vara färdigt – testa direkt
-    if (typeof cv.imread === "function" && typeof cv.cvtColor === "function") {
-      cvReady = true;
-      statusP.textContent = "OpenCV klart – startar kamera…";
-      initCamera();
-      return;
-    }
-    // Annars kopplar vi in init-callback
-    cv['onRuntimeInitialized'] = () => {
-      cvReady = true;
-      statusP.textContent = "OpenCV klart – startar kamera…";
-      initCamera();
-    };
+async function waitForOpenCVThenStart() {
+  log('väntar på cv...');
+  // vänta tills cv-definitionen finns
+  while (typeof cv === 'undefined' || !cv || !cv.Mat) {
+    await new Promise(r => setTimeout(r, 60));
+  }
+  // om redan klart – kör direkt
+  if (cv.imread && cv.cvtColor) {
+    log('cv klart (direkt)');
+    cvReady = true;
+    statusP.textContent = "OpenCV klart – startar kamera…";
+    await initCamera();
     return;
   }
-  // cv finns inte ännu – kolla igen om en liten stund
-  setTimeout(startWhenCvReady, 80);
+  // annars vänta på runtime init
+  await new Promise(res => {
+    cv['onRuntimeInitialized'] = () => {
+      log('cv onRuntimeInitialized');
+      cvReady = true;
+      statusP.textContent = "OpenCV klart – startar kamera…";
+      res();
+    };
+  });
+  await initCamera();
 }
+
 startWhenCvReady();
 
 /* =======================
@@ -390,4 +396,5 @@ function prettyPrint(out){
   resultP.textContent =
     `Antal prickar är: ${out.total}  |  Brickor: [${pretty}]  —  ${out.ms} ms`;
 }
+
 
